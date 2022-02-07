@@ -1,0 +1,1 @@
+while (conds<=printread) do conds=conds+1

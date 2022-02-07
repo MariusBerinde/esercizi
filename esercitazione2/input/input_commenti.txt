@@ -1,0 +1,7 @@
+/*test*/
+d = 300 // fuck you
+d2 = 500 /* velocità */
+d3 = 800 /* */
+d4 = 800 /*distanza*//*da Torino a Lione*/
+d5 = 700 */ lala
+d6 = 700 /* lala

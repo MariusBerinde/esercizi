@@ -1,0 +1,6 @@
+= x 5;
+= y 7;
+= z 11;
+cond when(> x 10) do print(x)
+     when(> y 10) do print( y )
+     else print(z)

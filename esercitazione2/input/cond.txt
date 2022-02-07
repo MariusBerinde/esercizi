@@ -1,0 +1,2 @@
+cond when(> x 0) do {print(x);print(y)} when(> y 0) do print(y)
+else print(z)

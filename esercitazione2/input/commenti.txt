@@ -1,0 +1,3 @@
+// test commenti
+=a 5;
+print(a);

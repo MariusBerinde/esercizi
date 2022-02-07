@@ -1,0 +1,4 @@
+= x 5;
+cond when(> x 0) do print( x )
+else print( 15 )
+print( + x 1)
