@@ -1,5 +1,7 @@
 package bit_code;
-
+/**
+ * versione intermedia della classe translator
+ */
 import esercitazione2.Lexer;
 import esercitazione2.Tag;
 import esercitazione2.Token;

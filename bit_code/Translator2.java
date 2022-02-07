@@ -1,12 +1,17 @@
 package bit_code;
 
-
+/**
+ * Versione finale del traduttore
+ */
 import esercitazione2.Lexer;
 import esercitazione2.Tag;
 import esercitazione2.Token;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import esercitazione2.Word;
 import esercitazione2.NumberTok;
 public class Translator2 {
@@ -21,13 +26,26 @@ public class Translator2 {
   boolean isEpr=false;
   private int labelIf=-1;
   private int nextIf=0;
-  private boolean inWhenList=false;
+  private List<Integer> labelList;  
   public Translator2(Lexer l, BufferedReader br) {
     lex = l;
     pbr = br;
     move();
+    labelList=new ArrayList<>();
   }
 
+  private boolean singleLabel(int label){
+      boolean risultato=true;
+      if(labelList.size()==0){
+          labelList.add(label);
+          return true;
+      }
+     if(labelList.indexOf(label)==-1){
+         labelList.add(label);
+         return true;
+     }
+     return false;
+  }
   void move() {
     look = lex.lexical_scan(pbr);
     System.out.println("token = " + look);
@@ -47,6 +65,9 @@ public class Translator2 {
     while(look.tag!=Tag.EOF){
 
         int lnext_prog = code.newLabel();
+        while(!singleLabel(lnext_prog)){
+            lnext_prog++;
+        }
         statlist(lnext_prog);
         code.emitLabel(lnext_prog);
     }
@@ -76,8 +97,11 @@ public class Translator2 {
         switch (look.tag) {
             case 59:
                 match(';');
-
-                code.emitLabel(code.newLabel());
+                int new_label=code.newLabel();
+                while(!singleLabel(new_label)){
+                    new_label++;
+                }
+                code.emitLabel(new_label);
                 stat(-1);
                 statlistp(label);    
             break;
@@ -156,6 +180,9 @@ public class Translator2 {
             case Tag.WHILE:
                 isWhile=true;
                 int labelExecution=code.newLabel();
+                while(!singleLabel(labelExecution)){
+                    labelExecution++;
+                }
                 match(Tag.WHILE);
                 match(40);
                 bexpr(labelExecution,0);
@@ -194,6 +221,9 @@ public class Translator2 {
     }
     private int whenlist(){
         int labelFirstDo=code.newLabel();
+        while(!singleLabel(labelFirstDo)){
+            labelFirstDo++;
+        }
         int nextLabel=-1;
         int nrWhen=0;
         while(look.tag==Tag.WHEN){
@@ -201,6 +231,9 @@ public class Translator2 {
                 nextLabel=whenitem(true,labelFirstDo);
                 else{
                 int labelIF=code.newLabel();
+                while(!singleLabel(labelIF)){
+                    labelIF++;
+                }
                 code.emitLabel(labelIF);
                 nextLabel=whenitem(false,nextLabel);
             }
@@ -216,6 +249,9 @@ public class Translator2 {
      */
     private int whenitem(boolean firstWhen,int labelDo){
         int labelElse=code.newLabel();
+        while(!singleLabel(labelElse)){
+            labelElse++;
+        }
         match(Tag.WHEN);
         
         match(40);
@@ -395,7 +431,9 @@ public class Translator2 {
             default:
                 break;
         }
+        
     }
+    
   public static void main(String[] args) {
     Lexer lex = new Lexer();
     String path = "bit_code\\test\\input_esame.txt"; 
@@ -403,7 +441,6 @@ public class Translator2 {
       BufferedReader br = new BufferedReader(new FileReader(path));
 
       Translator2 translator = new Translator2(lex, br);
-        
       translator.prog();
       System.out.println("Input OK");
       br.close();
