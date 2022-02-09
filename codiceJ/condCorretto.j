@@ -32,31 +32,25 @@
  ldc 5
  istore 0
 L1:
- ldc 7
- istore 1
-L2:
- ldc 11
- istore 2
-L3:
  iload 0
- ldc 10
- if_icmpgt L4
- goto L5
-L4:
+ ldc 6
+ if_icmpgt L2
+ goto L4
+L2:
  iload 0
  invokestatic Output/print(I)V
+ goto L0
+L4:
+ ldc 15
+ invokestatic Output/print(I)V
+ goto L0
+L0:
+ ldc 3
+ istore 1
 L5:
  iload 1
- ldc 10
- if_icmpgt L6
- goto L7
-L6:
- iload 1
  invokestatic Output/print(I)V
-L7:
- iload 2
- invokestatic Output/print(I)V
-L0:
+L3:
  return
 .end method
 

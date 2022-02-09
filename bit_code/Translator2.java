@@ -26,14 +26,14 @@ public class Translator2 {
   boolean isEpr=false;
   private int labelIf=-1;
   private int nextIf=0;
-  private List<Integer> labelList;  
+  //private List<Integer> labelList;  
   public Translator2(Lexer l, BufferedReader br) {
     lex = l;
     pbr = br;
     move();
-    labelList=new ArrayList<>();
+    //labelList=new ArrayList<>();
   }
-
+  /*
   private boolean singleLabel(int label){
       boolean risultato=true;
       if(labelList.size()==0){
@@ -45,7 +45,7 @@ public class Translator2 {
          return true;
      }
      return false;
-  }
+  }*/
   void move() {
     look = lex.lexical_scan(pbr);
     System.out.println("token = " + look);
@@ -65,9 +65,9 @@ public class Translator2 {
     while(look.tag!=Tag.EOF){
 
         int lnext_prog = code.newLabel();
-        while(!singleLabel(lnext_prog)){
+       /* while(!singleLabel(lnext_prog)){
             lnext_prog++;
-        }
+        }*/
         statlist(lnext_prog);
         code.emitLabel(lnext_prog);
     }
@@ -86,10 +86,12 @@ public class Translator2 {
 
     
     private void statlist(int label){
-        stat(-1);
+
+        
+        stat(label);
        /* if( !isEpr)
             nextIf=label;*/
-        statlistp(label);
+        statlistp(-1);
         /*if(isWhile)
             goto(1)*/
     }
@@ -98,9 +100,9 @@ public class Translator2 {
             case 59:
                 match(';');
                 int new_label=code.newLabel();
-                while(!singleLabel(new_label)){
+        /*        while(!singleLabel(new_label)){
                     new_label++;
-                }
+                }*/
                 code.emitLabel(new_label);
                 stat(-1);
                 statlistp(label);    
@@ -173,16 +175,19 @@ public class Translator2 {
                 break;
             case Tag.COND:
                 match(Tag.COND);
-                
-                int labelElse=whenlist();
+              //  int labelAfterCond=code.newLabel();
+                //int labelElse=whenlist(labelAfterCond);
+                int labelElse=whenlist(0);
                 stat(labelElse);
+                //code.emit(OpCode.GOto, labelAfterCond);
+                code.emit(OpCode.GOto, 0);
                 break;
             case Tag.WHILE:
                 isWhile=true;
                 int labelExecution=code.newLabel();
-                while(!singleLabel(labelExecution)){
+              /*  while(!singleLabel(labelExecution)){
                     labelExecution++;
-                }
+                }*/
                 match(Tag.WHILE);
                 match(40);
                 bexpr(labelExecution,0);
@@ -219,47 +224,39 @@ public class Translator2 {
         }
         
     }
-    private int whenlist(){
+    private int whenlist(int labelAfterWhen){
         int labelFirstDo=code.newLabel();
-        while(!singleLabel(labelFirstDo)){
+     /*   while(!singleLabel(labelFirstDo)){
             labelFirstDo++;
-        }
+        }*/
         int nextLabel=-1;
         int nrWhen=0;
         while(look.tag==Tag.WHEN){
-            if(nextLabel==-1)
-                nextLabel=whenitem(true,labelFirstDo);
-                else{
-                int labelIF=code.newLabel();
-                while(!singleLabel(labelIF)){
-                    labelIF++;
-                }
-                code.emitLabel(labelIF);
-                nextLabel=whenitem(false,nextLabel);
+            //!todo   
+            if(nextLabel==-1){
+                nextLabel=whenitem(labelFirstDo);
+                code.emit(OpCode.GOto, labelAfterWhen);
             }
-            nrWhen++;
+                else{
+                    nextLabel=whenitem(nextLabel);
+                }
         }
-        if(nrWhen==1)
-            nextLabel++;
+        
         return nextLabel;
     }
     /**
      * 
      * @param mode 1 assegnamento , 0 lettura
      */
-    private int whenitem(boolean firstWhen,int labelDo){
+    private int whenitem(int labelDo){
         int labelElse=code.newLabel();
-        while(!singleLabel(labelElse)){
+      /*  while(!singleLabel(labelElse)){
             labelElse++;
-        }
+        }*/
         match(Tag.WHEN);
         
         match(40);
-        if(firstWhen)
-            bexpr(labelDo,labelElse+1);
-        else
-            bexpr(labelDo,labelElse);
-
+        bexpr(labelDo,labelElse+1);
         match(41);
         match(Tag.DO);
         stat(labelDo);
@@ -298,9 +295,6 @@ public class Translator2 {
             code.emit(OpCode.if_icmple,labelDo);
             break;
             case "<>":
-            //    match(Tag.RELOP);
-              //  expr(0);
-             //   expr(0);
             System.out.println("tag <>");
             code.emit(OpCode.if_icmpne,labelDo);
             break;
@@ -436,7 +430,7 @@ public class Translator2 {
     
   public static void main(String[] args) {
     Lexer lex = new Lexer();
-    String path = "bit_code\\test\\input_esame.txt"; 
+    String path = "bit_code\\test\\while.txt"; 
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
 

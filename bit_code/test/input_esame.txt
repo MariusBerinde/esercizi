@@ -1,10 +1,9 @@
 
 read(a);
 read(b);
+
 while (<> a b ){
-    cond when (> a b ) do = a - a b
-    else = b - b a
-    print (a);
-    print (b)
+    = a - a 1;
+    print(a)
     }
-print(a b 100)
+print(b)
