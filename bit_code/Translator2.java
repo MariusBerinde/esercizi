@@ -430,7 +430,7 @@ public class Translator2 {
     
   public static void main(String[] args) {
     Lexer lex = new Lexer();
-    String path = "bit_code\\test\\while.txt"; 
+    String path = "bit_code\\test\\sum.txt"; 
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
 

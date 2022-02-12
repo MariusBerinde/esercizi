@@ -371,7 +371,7 @@ public class Translator {
     }
   public static void main(String[] args) {
     Lexer lex = new Lexer();
-    String path = "bit_code\\test\\blocco.txt"; 
+    String path = "bit_code\\test\\in.txt"; 
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
 

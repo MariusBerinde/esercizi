@@ -1,0 +1,7 @@
+read(x);
+read(y);
+while(<= x y 0) { 
+    print(x);
+    = x - x 1;}
+print(x);
+print(y)

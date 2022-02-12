@@ -1,7 +1,7 @@
 package bit_code;
 
 /**
- * Versione finale del traduttore
+ * Versione finale del traduttore in cui non funzionano cicli annidati e cicli dentro if
  */
 import esercitazione2.Lexer;
 import esercitazione2.Tag;
@@ -9,8 +9,6 @@ import esercitazione2.Token;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import esercitazione2.Word;
 import esercitazione2.NumberTok;
@@ -26,8 +24,8 @@ public class Translator3 {
   boolean isEpr=false;
   private int labelIf=-1;
   private int nextIf=0;
-  private int labelAfertIf=-1;
-  private int labelAfterWhile=-1;
+  private int labelAfterIf=-1;
+  private int labelWhile=-2;  // if ==-1 means that the value was used
   public Translator3(Lexer l, BufferedReader br) {
     lex = l;
     pbr = br;
@@ -51,52 +49,76 @@ public class Translator3 {
 
   public void prog() {
     while(look.tag!=Tag.EOF){
+        int lnext_prog =-1; 
+        if(labelAfterIf!=-1){
+            lnext_prog=labelAfterIf;
+            statlist(lnext_prog,false);
+            labelAfterIf=-1;
+            
+        }
+        else{
+            lnext_prog=code.newLabel();
+            statlist(lnext_prog,false);
 
-        int lnext_prog = code.newLabel();
-         statlist(lnext_prog);
+        }
+
+
        // code.emitLabel(lnext_prog);
     }
         match(Tag.EOF);
+        if(labelAfterIf==-1)
+            code.emitLabel(code.newLabel());
+        else
+            code.emitLabel(labelAfterIf);
+            
     try {
     code.toJasmin();
     }
     catch(java.io.IOException e) {
     System.out.println("IO error\n");
     }
-    // ... completare ...
-    }
-
-    private void testComments(int par1,int par2){
-
-    }
     
-    private void statlist(int label){//fixme add parametro per controllare chiusura corretta parentesi graffe 
+    }
 
+    
+    
+    private void statlist(int label,boolean isExpression){
         
         stat(label);
-       /* if( !isEpr)
-            nextIf=label;*/
-        statlistp();
-        /*if(isWhile)
-            goto(1)*/
+        statlistp(isExpression);
+        
     }
-    private void statlistp(){ 
+    
+    private void statlistp(boolean isExpression){ 
         switch (look.tag) {
             case 59:
                 match(';');
-                    
+                if(isExpression){
+                  //  int newLabel= code.newLabel();
+                  //  statlist(newLabel, true);
+                    int newLabel=-1;
+                    if(labelAfterIf!=-1){
+                        newLabel=labelAfterIf;
+                        statlist(newLabel,true);
+                        labelAfterIf=-1;
+                    }else{
+                        newLabel=code.newLabel();
+                        statlist(newLabel, true);
+                    }
+                }
+                        
             break;
             case Tag.EOF:
             case '}':
             case ')':   
-                // if((code.label-1) == labelIf)
-                  //  code.emit(OpCode.GOto,nextIf);
-                if(look.tag=='}')
+                 if((code.label-1) == labelIf)
+                   code.emit(OpCode.GOto,nextIf);
+                if(look.tag=='}' )
                     match('}');
                 break;
             default:
                 //stat(-1);
-              error("syntax error in stat");
+              //error("syntax error in stat");
                
         }
         
@@ -125,13 +147,10 @@ public class Translator3 {
             case Tag.PRINT:
                 match(Tag.PRINT);
                 match(40);
-
-                exprlist(false,false,false);
+                exprlist();
                 if(look.tag==')')
                     match(41);
-                code.emit(OpCode.invokestatic,1);
-                /*if((code.label-1)==labelIf)
-                    code.emit(OpCode.GOto, nextIf);*/
+                
                 break;
             case Tag.READ:
                 match(Tag.READ);
@@ -153,48 +172,51 @@ public class Translator3 {
                 break;
             case Tag.COND:
                 match(Tag.COND);
-              //  int labelAfterCond=code.newLabel();
-                //int labelElse=whenlist(labelAfterCond);
-                int labelElse=whenlist(0);
+                int labelAfterCond=code.newLabel();
+                int labelElse=whenlist(labelAfterCond);
                 stat(labelElse);
-                //code.emit(OpCode.GOto, labelAfterCond);
-                code.emit(OpCode.GOto, 0);
+                if(isWhile){
+                    if(look.tag=='}'){
+                        code.emit(OpCode.GOto, labelWhile);
+                        labelWhile=-1;
+                    }
+                    else
+                        statlist(labelAfterCond, true);
+                }else{
+
+                    code.emit(OpCode.GOto, labelAfterCond);
+                    labelAfterIf=labelAfterCond;
+                }
                 break;
             case Tag.WHILE:
                 isWhile=true;
                 int labelExecution=code.newLabel();
-              /*  while(!singleLabel(labelExecution)){
-                    labelExecution++;
-                }*/
+                int labelAfterWhile=code.newLabel();
+                labelWhile=labelExecution-1;
                 match(Tag.WHILE);
                 match(40);
-                bexpr(labelExecution,0);
+                bexpr(labelExecution,labelAfterWhile);
                 System.out.println("code.label="+this.code.label);
                 match(41);
-                stat(labelExecution);
-                code.emit(OpCode.GOto, labelExecution-1);
+                if(look.tag==Tag.WHILE)
+                    statlist(labelExecution, true);
+                else
+                  stat(labelExecution);
+                labelAfterIf=labelAfterWhile;
+                if(labelWhile!=-1)
+                    code.emit(OpCode.GOto, labelExecution-1);
                 isWhile=false;
                 break;
-            case '{':    
-                match('{');  
-                labelIf++;
-                statlist(code.label);
-                if(look.tag==')')
-                    match(41);
-               // if(look.tag=='}')
-                //    match('}');  // tag di }    
-                isEpr=false;
+            case '{':  
+                this.code.instructions.removeLast();
+                match('{');
+                statlist(actualLabel, true);
+                
                 break;
             case Tag.ELSE:
-                
-               // code.emitLabel(actualLabel);
+                this.code.instructions.removeLast();
                 match(Tag.ELSE);
-                if(look.tag=='{')
-                    match('{');
-                stat(-1);
-                if(look.tag=='}')
-                    match('}');
-                    
+                statlist(actualLabel, false);    
             break;
             default:
                     error("syntax error in stat");
@@ -204,20 +226,18 @@ public class Translator3 {
     }
     private int whenlist(int labelAfterWhen){
         int labelFirstDo=code.newLabel();
-     /*   while(!singleLabel(labelFirstDo)){
-            labelFirstDo++;
-        }*/
+     
         int nextLabel=-1;
-        int nrWhen=0;
+        
         while(look.tag==Tag.WHEN){
             //!todo   
             if(nextLabel==-1){
                 nextLabel=whenitem(labelFirstDo);
-                code.emit(OpCode.GOto, labelAfterWhen);
             }
-                else{
-                    nextLabel=whenitem(nextLabel);
-                }
+            else{
+                nextLabel=whenitem(nextLabel);
+            }
+            code.emit(OpCode.GOto, labelAfterWhen);
         }
         
         return nextLabel;
@@ -234,10 +254,11 @@ public class Translator3 {
         match(Tag.WHEN);
         
         match(40);
-        bexpr(labelDo,labelElse+1);
+        bexpr(labelDo,labelElse);
         match(41);
         match(Tag.DO);
-        stat(labelDo);
+            stat(labelDo);
+        
         return labelElse;
     }
     /**
@@ -248,7 +269,7 @@ public class Translator3 {
     private void bexpr(int labelDo,int labelElse){
         
             
-
+          code.emitLabel(code.newLabel());
           var operazione=((Word)look).lexeme;
           System.out.println("operando="+operazione);      
           match(Tag.RELOP);
@@ -296,17 +317,19 @@ public class Translator3 {
             case '+':
                 match('+');
                 if(look.tag=='('){
-                    match('('); 
-                    exprlist(true,true,false);
-
-                }else{
-                    exprlist(false,true,false);
-                }
-                  
-                
-                if(look.tag==')')
+                    match('(');
+                    int nrExpr=0;
+                    while(look.tag!=')'){
+                        expr(0);
+                        nrExpr++;
+                    }
                     match(')');
-                code.emit(OpCode.iadd);
+                    for(int i=0; i < (nrExpr-1); code.emit(OpCode.iadd), i++);
+                }else{
+                    expr(0);
+                    expr(0);
+                    code.emit(OpCode.iadd);
+                }
             break;
             case '-': 
                 match('-');
@@ -322,14 +345,19 @@ public class Translator3 {
                 match('*');
                 if(look.tag=='('){
                     match('(');
-                    exprlist(true,false,true);
+                    int nrExpr=0;
+                    while(look.tag!=')'){
+                        expr(0);
+                        nrExpr++;
+                    }
+                    match(')');
+                    for(int i=0; i < (nrExpr-1); code.emit(OpCode.imul), i++);
 
                 }else{
-                    exprlist(false,false,true);
+                    expr(0);
+                    expr(0);
+                    code.emit(OpCode.imul);
                 }
-                if(look.tag==')')
-                    match(')');
-                code.emit(OpCode.imul);
             break;
             case '/': 
                 match('/');
@@ -371,44 +399,22 @@ public class Translator3 {
     /* 
      *  @param manyArguments true l'operazione si aspetta più di 2 argomenti , false altrimenti
      */
-    private void exprlist(boolean manyArguments,boolean isAdd,boolean isMul){
-        if(isAdd || isAdd){
-            if(manyArguments){
-                while(look.tag!=')'){
-                    expr(0);
-                }
-                match(')');
-            }else{
-                expr(0);
-                expr(0);
-            }
-        }else{
-
+    private void exprlist(){  //!todo da riscrivere
+        var toPrint=look.tag=='+'||look.tag=='-'||look.tag=='/'||look.tag=='*'||look.tag==Tag.NUM || look.tag==Tag.ID;
+        var nrPrint=0;
+        while(toPrint){
             expr(0);
-            exprlistp();
-        }
-    }
-    private void exprlistp(){
-        switch (look.tag) {
-            case '+':
-            case  '-':
-            case '/':
-            case Tag.NUM:
-            case Tag.ID:
-                expr(0);
-                exprlistp();
-                break;
-            case ')':
-                break;
-            default:
+            code.emit(OpCode.invokestatic,1);
+            if(look.tag==')')
                 break;
         }
         
     }
     
+    
   public static void main(String[] args) {
     Lexer lex = new Lexer();
-    String path = "bit_code\\test\\assegnazioni.txt"; 
+    String path = "bit_code\\test\\testFinali\\tf6.txt"; 
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
 

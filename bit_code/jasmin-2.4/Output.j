@@ -29,44 +29,53 @@
 .method public static run()V
  .limit stack 1024
  .limit locals 256
+L0:
  invokestatic Output/read()I
  istore 0
 L1:
  invokestatic Output/read()I
  istore 1
 L2:
- iload 0
- iload 1
- if_icmpne L3
- goto L0
+ ldc 42
+ istore 2
 L3:
+L6:
  iload 0
  iload 1
- if_icmpgt L4
- goto L6
+ if_icmpne L4
+ goto L5
 L4:
+ iload 2
+ invokestatic Output/print(I)V
+L7:
+L11:
+ iload 0
+ iload 1
+ if_icmpgt L9
+ goto L10
+L9:
  iload 0
  iload 1
  isub 
  istore 0
-L6:
+ goto L8
+L10:
  iload 1
  iload 0
  isub 
  istore 1
- goto L2
-L0:
+L8:
+ iload 2
+ invokestatic Output/print(I)V
+ goto L3
+L5:
  iload 0
  invokestatic Output/print(I)V
-L7:
  iload 1
  invokestatic Output/print(I)V
-L6:
- iload 0
- iload 1
  ldc 100
  invokestatic Output/print(I)V
-L8:
+L12:
  return
 .end method
 

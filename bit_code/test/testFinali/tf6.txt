@@ -1,9 +1,10 @@
-read(a);
-read(b);
+read(a); 
+read(b); 
+= c 42;
 while (<> a b ){
-    cond when (> a b ) do = a - a b
+    print(c);
+    cond when (> a b ) do =a - a b
     else = b - b a
-    print (a);
-    print (b)
+    print(c)
     }
-print(a b 100)
+print(a b 100)   

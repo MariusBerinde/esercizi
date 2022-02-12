@@ -1,0 +1,8 @@
+=x 2; 
+cond when(> x 0) do{
+    while(> x 1){ 
+        =x - x 1
+    }
+}
+else print(42);
+print(x)

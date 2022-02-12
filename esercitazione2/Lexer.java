@@ -229,7 +229,7 @@ public class Lexer {
 
     public static void main(String[] args) {
         Lexer lex = new Lexer();
-        String path = "esercitazione2\\input\\cond.txt"; // il percorso del file da leggere
+        String path = "esercitazione2\\input\\while1.txt"; // il percorso del file da leggere
         try {
             BufferedReader br = new BufferedReader(new FileReader(path));
             Token tok;
