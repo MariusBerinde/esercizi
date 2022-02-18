@@ -190,12 +190,13 @@ public class Translator3 {
                 break;
             case Tag.WHILE:
                 isWhile=true;
-                int labelExecution=code.newLabel();
+                int labelExecution=-1;
                 int labelAfterWhile=code.newLabel();
                 labelWhile=labelExecution-1;
                 match(Tag.WHILE);
                 match(40);
-                bexpr(labelExecution,labelAfterWhile);
+                //bexpr(labelExecution,labelAfterWhile,-1);
+                labelExecution=bexpr1(code.newLabel(), labelAfterWhile);
                 System.out.println("code.label="+this.code.label);
                 match(41);
                 if(look.tag==Tag.WHILE)
@@ -211,7 +212,7 @@ public class Translator3 {
                 this.code.instructions.removeLast();
                 match('{');
                 statlist(actualLabel, true);
-                
+                //todo:add mach }
                 break;
             case Tag.ELSE:
                 this.code.instructions.removeLast();
@@ -232,7 +233,7 @@ public class Translator3 {
         while(look.tag==Tag.WHEN){
             //!todo   
             if(nextLabel==-1){
-                nextLabel=whenitem(labelFirstDo);
+                nextLabel=whenitem(labelFirstDo);  
             }
             else{
                 nextLabel=whenitem(nextLabel);
@@ -254,10 +255,10 @@ public class Translator3 {
         match(Tag.WHEN);
         
         match(40);
-        bexpr(labelDo,labelElse);
+       int labelExe= bexpr1(labelDo,labelElse);
         match(41);
         match(Tag.DO);
-            stat(labelDo);
+        stat(labelExe);
         
         return labelElse;
     }
@@ -265,11 +266,14 @@ public class Translator3 {
      * 
      * @param labelDo label di stat
      * @param labelElse label ramo else
+     * @param actualLabel
      */
-    private void bexpr(int labelDo,int labelElse){
-        
+    private void bexpr(int labelDo,int labelElse,int actualLabel){
+        if(actualLabel==-1)
+            code.emitLabel(code.newLabel());
+        else
+            code.emitLabel(actualLabel);
             
-          code.emitLabel(code.newLabel());
           var operazione=((Word)look).lexeme;
           System.out.println("operando="+operazione);      
           match(Tag.RELOP);
@@ -306,6 +310,50 @@ public class Translator3 {
             break;
         }
         code.emit(OpCode.GOto, labelElse);
+    }
+    private int bexpr1(int labelDo,int labelElse){
+        if(labelDo==-1)
+            code.emitLabel(code.newLabel());
+        else
+            code.emitLabel(labelDo);
+          int labelExe= code.newLabel();  
+          var operazione=((Word)look).lexeme;
+          System.out.println("operando="+operazione);      
+          match(Tag.RELOP);
+          expr(0);
+          expr(0);
+        switch (operazione) {
+            case ">":
+            System.out.println("tag >");
+            code.emit(OpCode.if_icmpgt,labelExe);
+            break;
+            case ">=":
+            System.out.println("tag >=");
+                
+            code.emit(OpCode.if_icmpge,labelExe);
+            break;
+            case "<":
+            System.out.println("tag <");
+            code.emit(OpCode.if_icmplt,labelExe);
+            break;
+            case "<=":
+                System.out.println("tag <=");
+            code.emit(OpCode.if_icmple,labelExe);
+            break;
+            case "<>":
+            System.out.println("tag <>");
+            code.emit(OpCode.if_icmpne,labelExe);
+            break;
+            case "==":
+            System.out.println("tag ==");
+            code.emit(OpCode.if_icmpeq,labelExe);
+            break;
+            default:
+            System.out.println("errore:  RELOP non riconosciuto");
+            break;
+        }
+        code.emit(OpCode.GOto, labelElse);
+        return labelExe;
     }
 
     /**
@@ -401,7 +449,7 @@ public class Translator3 {
      */
     private void exprlist(){  //!todo da riscrivere
         var toPrint=look.tag=='+'||look.tag=='-'||look.tag=='/'||look.tag=='*'||look.tag==Tag.NUM || look.tag==Tag.ID;
-        var nrPrint=0;
+        
         while(toPrint){
             expr(0);
             code.emit(OpCode.invokestatic,1);
