@@ -127,7 +127,7 @@ public class Translator3 {
         }
         
             }
-    private void stat(int actualLabel){ //todo:check me
+    private void stat(int actualLabel){ 
         if(actualLabel!=-1)
             code.emitLabel(actualLabel);
         switch(look.tag){
@@ -281,34 +281,27 @@ public class Translator3 {
             code.emitLabel(labelDo);
           int labelExe= code.newLabel();  
           var operazione=((Word)look).lexeme;
-          System.out.println("operando="+operazione);      
           match(Tag.RELOP);
           expr(0);
           expr(0);
         switch (operazione) {
             case ">":
-            System.out.println("tag >");
             code.emit(OpCode.if_icmpgt,labelExe);
             break;
             case ">=":
-            System.out.println("tag >=");
                 
             code.emit(OpCode.if_icmpge,labelExe);
             break;
             case "<":
-            System.out.println("tag <");
             code.emit(OpCode.if_icmplt,labelExe);
             break;
             case "<=":
-                System.out.println("tag <=");
             code.emit(OpCode.if_icmple,labelExe);
             break;
             case "<>":
-            System.out.println("tag <>");
             code.emit(OpCode.if_icmpne,labelExe);
             break;
             case "==":
-            System.out.println("tag ==");
             code.emit(OpCode.if_icmpeq,labelExe);
             break;
             default:
@@ -433,7 +426,7 @@ public class Translator3 {
     
   public static void main(String[] args) {
     Lexer lex = new Lexer();
-    String path = "bit_code\\test\\testFinali\\tf12.txt";  
+    String path = "bit_code\\test\\testFinali\\tf11.txt";  
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
 
