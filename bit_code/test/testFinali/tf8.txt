@@ -1,0 +1,7 @@
+read(a);
+read(b);
+cond when(>a 0) do{ print(a); print(42)}
+     when(>b 0) do{print(b); print(95)}
+ else print(1000)
+ print(100);
+    

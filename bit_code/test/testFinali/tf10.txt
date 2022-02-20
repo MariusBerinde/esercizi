@@ -1,0 +1,11 @@
+read(a);
+read(b);
+=i 0;
+while(< i 10){
+    cond when(< i a) do {print(a); =i + i 2}
+         when(< i b) do {print(b); =i + i 3}
+         else print(42)
+         print(i);
+         =i + i 1
+}
+print(i)

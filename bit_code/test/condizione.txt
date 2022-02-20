@@ -2,6 +2,6 @@
 = y 7;
 = z 11;
 cond when(> x 5) do print(x)
-     when(> y 5) do print( y)
+     when(> y 100) do print( y)
      else print(z)
 print(42)

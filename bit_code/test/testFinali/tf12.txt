@@ -1,0 +1,8 @@
+read(a);
+cond when(> a 0) do print(- a 1)
+else
+    print (+ a 1)
+read(b);
+cond when(> b 0) do print(- b 1)
+else
+    print (+ b 1)

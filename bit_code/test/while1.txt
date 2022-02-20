@@ -1,7 +1,7 @@
 read(x);
 read(y);
-while(> x y ) { 
+while(< x y ) { 
     print(x);
-    = x - x 1}
+    = x + x 1}
 print(x);
 print(y);

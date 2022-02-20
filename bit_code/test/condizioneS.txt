@@ -1,5 +1,5 @@
 read(x);
-cond when(> x 0) do{
+cond when(== x 12) do{
     print( 1 );
     print (2)
 } 
