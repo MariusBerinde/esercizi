@@ -26,6 +26,7 @@ public class Translator3 {
   private int nextIf=0;
   private int labelAfterIf=-1;
   private int labelWhile=-2;  // if ==-1 means that the value was used
+  private boolean fromStat=false;
   public Translator3(Lexer l, BufferedReader br) {
     lex = l;
     pbr = br;
@@ -184,7 +185,7 @@ public class Translator3 {
                 
 
                 if(isWhile){
-                    if( look.tag=='}' ){
+                    if( look.tag=='}' || fromStat){
                         code.emitLabel(labelAfterCond);
                         code.emit(OpCode.GOto, labelWhile);
                         labelWhile=-1;
@@ -209,8 +210,11 @@ public class Translator3 {
                 match(41);
                 if(look.tag==Tag.WHILE)
                     statlist(labelExecution, true);
-                else
-                  stat(labelExecution);
+                else{
+                    fromStat=true;
+                    stat(labelExecution);
+                    fromStat=false;
+                }
                 labelAfterIf=labelAfterWhile;
                 if(labelWhile!=-1)
                     code.emit(OpCode.GOto, labelExecution-1);
@@ -426,7 +430,7 @@ public class Translator3 {
     
   public static void main(String[] args) {
     Lexer lex = new Lexer();
-    String path = "bit_code\\test\\testFinali\\tf11.txt";  
+    String path = "bit_code\\test\\testFinali\\esame.txt";  
     try {
       BufferedReader br = new BufferedReader(new FileReader(path));
 

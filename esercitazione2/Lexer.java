@@ -92,8 +92,7 @@ public class Lexer {
                     
                     return Token.div;
                 } 
-                 this.peek='\n';      
-                 readch(br);
+                 
             case ';':
                 peek = ' ';
                 return Token.semicolon;     

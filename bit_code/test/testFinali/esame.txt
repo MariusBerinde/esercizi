@@ -1,0 +1,7 @@
+
+read(a1);
+read(b2);
+while (<> a1 b2)
+    cond when (> a1 b2) do = a1 - a1 b2
+    else = b2 - b2 a1;
+print(a1 b2 100)
